@@ -1,11 +1,12 @@
-Package: krakenTools
+Package: krakenR
 Type: Package
-Title: What the Package Does (Title Case)
+Title: This package is an R interface for the Kraken.com api
 Version: 0.1.0
-Author: Who wrote it
+Author: aushaff
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Implements the kraken.com api in R
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Imports:
+	jsonlite

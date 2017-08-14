@@ -1,5 +1,5 @@
 #'@title gets the server time.
-#'@description aid to aaproximating the skew time between server and client.
+#'@description aid to approximating the skew time between server and client.
 #'returns unix timestamp and time in RFC1123 format
 get_server_time <- function() {
 
