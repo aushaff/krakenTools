@@ -9,20 +9,72 @@ library(anytime)
 
 # to do. 
 # write directly to file?
-# pause and retry if there are errors
 # check to see if the data exists before saving to file? 
 # handle end of file
 
-get_all_historical_trades <- function(pair_in) {
+# pair in as: ETHEUR
+# file_in as: path/file.csv
+get_all_historical_trades <- function(pair_in, file_in = NA) {
   
-  #========================================================
   # Setup 
-  
-  since <- 0 # time to collect data from (0 is now)
+  curr_since <- 0 # time to collect data from (0 is now)
   more_data <- TRUE # more data to be downloaded
   is_err <- FALSE # error flag
   max_retries <- 10 # maximum number of re-down attempts
   sleep_time <- 30 # pause inbetween retries
+  
+  # updated if the file already exists
+  first_date <- NA
+  last_date <- NA
+  
+  #============================================================================
+  # check to see if input file exists and if not create it
+  
+  if(!is.na(file_in)) {
+    
+    # if file exists ...
+    if(file.exists(file_in)) {
+      
+      cat("File exists. Will be written to", "\n")
+      
+      # check to see if file can be read
+            
+      # get first date of file and save as first_date
+      first_date <- NA
+      # get last date of file and save as last_date
+      last_date <- NA
+      
+    } else { # if file doesnt exist ...
+      
+      print(paste0("File input: ", "/n", file_in, " doesn't exist. Creating ..."))
+    
+      # call function to create file
+      tryCatch({
+        create_kraken_tick_file(file_in)  
+      }, warning = function(war) {
+        print(paste0("Warning recieved creating tick file: ", war))
+      }, error = function (err){
+        
+        stop(paste0("File ", file_in, " cannot be created. ", err))
+      })
+    } # end if(file.exists)  
+  } else {
+    cat("No output file and path specified. Function call requires:
+        get_all_historical_trades(pair, path_and_file)", "\n")
+    return(0)
+  }# end if(!is.na(file_in))
+  
+  #============================================================================
+ 
+      
+  
+      # get data between now (0) and first date
+  
+        # append to start of file
+  
+      
+  #========================================================
+  
   
   # dataframe for output
   out_dat <- data.frame(price = numeric(), 
@@ -57,15 +109,14 @@ get_all_historical_trades <- function(pair_in) {
       # if error message ...
       # more_data <- FALSE
       
-      
-      cat("Error received retrieving data")
+      cat("Error received retrieving data: ", "\n")
       print(err)
       is_err <- TRUE
       
       # while error flag is set retry for max_retries
       while(is_err) {
         
-        cat("Retrying. Retry #", retries, "\n")
+        cat("Retrying. ===============", "\n", "Retry #", retries, "\n")
         
         # pause for sleep_time
         Sys.sleep(sleep_time)
@@ -100,11 +151,28 @@ get_all_historical_trades <- function(pair_in) {
     #======================================================
     # if no error can add data to df and update since
     curr_dat <- curr_trades[[1]]
-    out_dat <- rbind(out_dat, curr_dat)
-    since <- curr_trades$last
+    # out_dat <- rbind(out_dat, curr_dat)
     
+    # update the sinces
+    old_since <- curr_since
+    curr_since <- curr_trades$last
     
-    cat("Current since: ", since, "\n")
+    cat("Old since: ", old_since, "; New since: ", curr_since, "\n")
+    
+    if(old_since != curr_since && !is.na(curr_dat)) {
+      
+      cat("Appending to file", "\n")
+      # append to the end of the csv file
+      write.table(curr_dat, file = file_in, 
+                row.names = FALSE,
+                col.names = FALSE,
+                sep = ",",
+                append = TRUE) 
+    } else {
+      cat("Two sinces are the same", "\n")
+    }
+
+    curr_dat <- NA # just to ensure same data isn't written twice
  
   } # end of while(more_data)
 } # end of function
@@ -113,6 +181,8 @@ get_all_historical_trades <- function(pair_in) {
     
 # currently only one at a time
 pair <- "ETHEUR"
+eth_eur_file <- "/media/External/data/kraken/etheur.csv"
 
-# get trades from time 0
-eth_eur <- get_all_historical_trades(pair)
+# get trades - check to see if file exists and update
+get_all_historical_trades(pair, eth_eur_file)
+#get_all_historical_trades(pair)
