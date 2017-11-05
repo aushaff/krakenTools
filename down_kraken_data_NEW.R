@@ -8,16 +8,15 @@ library(plyr)
 library(anytime)
 library(R.utils)
 
-# to do.
-# write directly to file?
-# check to see if the data exists before saving to file?
-# handle end of file
-# it appears to be trying to get data with the same since multiple times
-# needs restructuring to find and solve problem. Looks as though some
-# part of the data collection isn't working but this should cause a
-# retry if the data isn't available. Otherwise the curr_since should
-# increment. The sinces should only be the same if there is an http error
-# but an error message should appear ...
+# to do:
+# move the get data section to a function that can be passed
+#   the since from the beginning or end of a file along with
+#   a flag to append to start or finish. 
+# needs to be some filter to check if date from start overlaps
+#   and then only add the rows that are before the last date in 
+#   the file.
+# should this write lines directly to file? if downloading for the first
+#   time it holds a lot of data in memory. 
 
 #============================================================================
 # check to see if input file exists and if not create it
@@ -100,14 +99,14 @@ handle_error <- function(err_in,
   sleep_time <- 30 # pause inbetween retries
   retries <- 0 # current number of retries
 
-  cat("Error received retrieving data: ", "\n")
-  print(err_in)
+ 
 
   # while error flag is set retry for max_retries
   while(is_err & retries<max_retries) {
 
-    cat("Retrying. ===============", "\n", "Retry #", retries, "\n")
-
+    cat("Error received retrieving data. Retry No. ", retries, "\n")
+    print(err_in)
+    
     # pause for sleep_time
     Sys.sleep(sleep_time)
 
@@ -118,22 +117,39 @@ handle_error <- function(err_in,
     # if there is an error
     if(length(err_in)>0) {
 
-        
-
+      # increment number of retries
+      retries <- retries + 1
+      
     } else {
       
       # if there isn't an error
       is_err <- FALSE
       # return curr_trades
+      return(curr_trades)
 
     }
-
-    # increment number of retries
-    retries <- retries + 1
-  }
-} # end while(is_err)
+  } # end while(is_err)
+  
+  # this should only be reached if maximum retries   
+  cat("Maximum number of retries reached ", retries, "\n")
+  print(err_in)
+  return("MAX_ERR")
+  
+} # end function
 
 #==============================================================================
+write_quote_df <- function(curr_dat, file_in) {
+  
+        write.table(curr_dat, file = file_in,
+                  row.names = FALSE,
+                  col.names = FALSE,
+                  sep = ",",
+                  append = TRUE)
+  
+}
+
+#==============================================================================
+
 # pair in e.g.: ETHEUR
 # file_in e.g.: path/file.csv
 get_historical_trades <- function(pair_in, # pair to be read
@@ -182,29 +198,52 @@ get_historical_trades <- function(pair_in, # pair to be read
       # get the error list from returned data
       err <- curr_trades$error
       
-      # if there is an error
+      # if there is an error. This will retry the data for max_retries and 
+      # return curr_trades if possible; stopping if not
       if(length(err)>0) {
+        
         err_out <- handle_error(err,
                                 pair_in,
-                                since)
+                                curr_since)
+        
+        # after return from handle_error - check return
+        if(err_out[1]=="MAX_ERR") {
+          
+          more_data <- FALSE
+          
+        } else if (is.list(err_out)) {
+          
+          curr_trades <- err_out
+          
+        } else {
+          print("Unhandled return from error function")
+          print(class(err_out))
+          print(err_out)
+          more_data <- FALSE
+          
+        }
+        
       } # end if error
       
-      # here we update curr_trades if data is returned or 
-      # we stop the functioning
+      #========================================================================
+      # process curr_trades (current tick data)
       
-      if(err_out[1]==0){
-        stop(paste0("Persistent error: ", err_out[2]))
-      } else {
-        
-        #curr_dat <- curr_trades[[1]]
-      }
-      
-       
+      # extract the data portion
       curr_dat <- curr_trades[[1]]
       
+      # add the time in CET - do this at a later stage. Keep the data clean now
+      #curr_dat$cet <- anytime(unlist(curr_dat$unix_time))
+
+      # add the current tick data to the dataframe
+      out_dat <- rbind(out_dat, curr_dat)
+
+      # update the sinces
+      curr_since <- curr_trades$last
       
+    } # end while 
+  
+  write_quote_df(out_dat, file_in)
       
-  #========================================================
 }
 
 # currently only one at a time
@@ -212,55 +251,11 @@ pair_in <- pair <- "XLMXBT"
 file_in <- xlmxbt_file <- "/home/deckard/Desktop/XLMXBT_tick.csv"
 
 # get trades - check to see if file exists and update
+
+# currently this just gets all the data from the current time
 get_historical_trades(pair, xlmxbt_file)
 
 
-
-
-#     #======================================================
-#     # if no error get the data 
-
-# <<<<<<< HEAD
-# =======
-#     
-#     # add the time in CET
-#     curr_dat$cet <- anytime(unlist(curr_dat$unix_time))
-# >>>>>>> 5c4930a2d235915f641f733842cb0f06bed15276
-#     # out_dat <- rbind(out_dat, curr_dat)
-# 
-#     # update the sinces
-#     old_since <- curr_since
-#     curr_since <- curr_trades$last
-# 
-#     cat("Old since: ", old_since, "; New since: ", curr_since, "\n")
-# 
-# <<<<<<< HEAD
-#     if(old_since != curr_since && !is.na(curr_dat)) {
-# =======
-#     # if(old_since != curr_since && !is.na(curr_dat)) {
-# >>>>>>> 5c4930a2d235915f641f733842cb0f06bed15276
-# 
-#       cat("Appending to file", "\n")
-#       # append to the end of the csv file
-#       write.table(curr_dat, file = file_in,
-#                 row.names = FALSE,
-#                 col.names = FALSE,
-#                 sep = ",",
-#                 append = TRUE)
-# <<<<<<< HEAD
-#     } else {
-#       cat("Two sinces are the same", "\n")
-#     }
-# =======
-#     # } else {
-#     #   cat("Two sinces are the same", "\n")
-#     # }
-# >>>>>>> 5c4930a2d235915f641f733842cb0f06bed15276
-# 
-#     curr_dat <- NA # just to ensure same data isn't written twice
-# 
-#   } # end of while(more_data)
-# } # end of function
 
 
 
