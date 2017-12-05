@@ -62,8 +62,11 @@ get_historical_trades <- function(pair_in, # pair to be read
       # get the data from current since
       tryCatch({
         
+        print("===================================================")
         curr_trades <- krakenR::get_recent_trades(pair_in,
                                                   curr_since)  
+        print("curr_trades returned OK")
+        print(curr_trades)
       }, warning = function(warn) {
         print(paste0("Warning ", warn, " received"))
       }, error = function(err) {
@@ -82,19 +85,22 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       # if there is an error. This will retry the data for max_retries and 
       # return curr_trades if possible; stopping if not
-      if(length(err)>0) {
+      if(length(err)>0||is.null(curr_trades)) {
         
+        print("In err > 0")
         err_out <- handle_error(err,
                                 pair_in,
                                 curr_since)
         
         # after return from handle_error - check return
         if(err_out[1]=="MAX_ERR") {
-          
+          print("MAX_ERR received: more_data: FALSE")
           more_data <- FALSE
           
         } else if (is.list(err_out)) {
           
+          print("curr_trades is a list")
+          print(curr_trades)
           curr_trades <- err_out
           
         } else {
@@ -113,7 +119,9 @@ get_historical_trades <- function(pair_in, # pair to be read
       # extract the data portion
       curr_dat <- data.frame(curr_trades[[1]])
       header <- c("price", "volume", "unix_time", "buy_sell", "mark_lim", "misc")
+      print("trying to set header of curr_dat")
       colnames(curr_dat) <- header
+      print("set header of curr_dat")
       
       # convert the time to CET and then add it to the df
       curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
@@ -134,6 +142,8 @@ get_historical_trades <- function(pair_in, # pair to be read
         write_quote_df(curr_dat, 
                        file_in,
                        eof = TRUE)  
+        curr_dat <- NULL
+        gc()
         
       } else {
         
@@ -150,17 +160,27 @@ get_historical_trades <- function(pair_in, # pair to be read
 
 # currently only one at a time
 pair_in <- pair <- "XLMXBT"
-file_in <- xlmxbt_file <- "/home/deckard/Desktop/XLMXBT_tick.csv"
-temp_in <- xlmxbt_file <- "/home/deckard/Desktop/XLMXBT_tick_temp.csv"
+file_in <- xlmxbt_file <- "/home/deckard/Desktop/kraken_data/XLMXBT_tick.csv"
+
 # get trades - check to see if file exists and update
 
 # currently this just gets all the data from the current time
 get_historical_trades(pair, xlmxbt_file)
 
+# file_in <- read.csv(file_in, header = FALSE)
+# head(file_in)
+# tail(file_in)
 
-temp <- read.csv(temp_in, header = FALSE)
-head(temp)
-tail(temp)
-
-
-
+#=================================================
+# temp_in <- "/home/deckard/Desktop/kraken_data/XLMXBT_tick_temp.csv"
+# temp <- read.csv(temp_in, header = FALSE)
+# colnames(temp) <- c("price", "vol", "unix_time", 
+#                        "buy_sell", "mark_lim", "misc", "time")
+# head(temp)
+# tail(temp)
+# 
+# write.table(temp, file = file_in,
+#             row.names = FALSE,
+#             col.names = TRUE,
+#             sep = ",",
+#             append = FALSE)
