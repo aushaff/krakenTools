@@ -8,16 +8,12 @@ library(plyr)
 library(anytime)
 library(R.utils)
 library(dplyr)
+library(krakenTools)
 
 # to do:
-# move the get data section to a function that can be passed
-#   the since from the beginning or end of a file along with
-#   a flag to append to start or finish.
-# needs to be some filter to check if date from start overlaps
-#   and then only add the rows that are before the last date in
-#   the file.
-# should this write lines directly to file? if downloading for the first
-#   time it holds a lot of data in memory.
+# now needs to be modified to get time from last file date
+# this will need to adjust the unix time and check for duplicate rows:
+# for new since remove decimal point and add five zeroes to the end
 
 #==============================================================================
 # pair in e.g.: ETHEUR
@@ -31,180 +27,108 @@ get_historical_trades <- function(pair_in, # pair to be read
   #========================================================
   # Setup
   more_data <- TRUE # more data to be downloaded
-
-  #========================================================
-  # check output file exists. If it doesn't create it
-  #file_setup_out <- output_file_setup(file_in)
-
-  # get first and last times (NA if new file)
-  #first_time <- file_setup_out[[1]]
-  #last_time <- file_setup_out[[2]]
-
-  # effectively these need to be handled seperately so the while will
-  # need to be a function - maybe all from here is a function
-  #========================================================
-  # dataframe for output
-  # out_dat <- data.frame(price = numeric(),
-  #                       volume = numeric(),
-  #                       time = numeric(),
-  #                       buy_sell = character(),
-  #                       market_limit = character(),
-  #                       misc = character())
+  retries <- 0 # outside of the error loop so retries is 0
+  max_retries <- 10
 
   #============================================================================
   # Data downloading
 
   # continue downloading for as long as there is data
-    while(more_data) {
+  while(more_data) {
 
-     #retries <- 0 # outside of the error loop so retries is 0
+    # get the data from current since
+    tryCatch({
 
-      # get the data from current since
-      tryCatch({
-
-        print("===================================================")
-        print(paste0("Current since is: ", curr_since))
-        curr_trades <- krakenR::get_recent_trades(pair_in,
+      print("===================================================")
+      print(paste0("Current since is: ", curr_since))
+      curr_trades <- krakenR::get_recent_trades(pair_in,
                                                   curr_since)
-        print("curr_trades returned")
-        #print(curr_trades)
-      }, warning = function(warn) {
-        print(paste0("Warning ", warn, " received"))
-      }, error = function(err) {
-        print(paste0("Error ", err, " received and caught (tryCatch)"))
-
-        handle_error(err,
-                     pair_in,
-                     curr_since)
-      })
-      
-      #========================================================================
-      # Error checking and handling
-
-
-      # get the error list from returned data
-      err <- curr_trades$error
-
-      # if there is an error. This will retry the data for max_retries and
-      # return curr_trades if possible; stopping if not
-      if(length(err)>0) {
-
-        print("Error found: ", err)
-        curr_trades <- handle_error(err,
-                                pair_in,
-                                curr_since)
-        #cat("err_out is: ", err_out)
-        
-        
-      } else if(length(curr_trades)!=2) {
-        
-        print("Incorrect return format", curr_trades)
-        curr_trades <- handle_error("Incorrect return format",
-                                pair_in,
-                                curr_since)
-        
-      }
-
-      #   # after return from handle_error - check return
-      #   if(err_out=="MAX_ERR") {
-      #     print("MAX_ERR received: more_data: FALSE")
-      #     more_data <- FALSE
-      # 
-      #   } else if (is.list(err_out)) {
-      # 
-      #     print("err_out is a list")
-      #     print(curr_trades)
-      #     curr_trades <- err_out
-      # 
-      #   } else {
-      #     print("Unhandled return from error function")
-      #     print(class(err_out))
-      #     print(err_out)
-      #     more_data <- FALSE
-      # 
-      #   }
-      # 
-      # } # end if error
-
-      #========================================================================
-      # process curr_trades (current tick data)
-      # extract the data portion
+      print("curr_trades returned")
+      #print(curr_trades)
+      #============================================
+      # extract the data and provide column headers
       curr_dat <- data.frame(curr_trades[[1]])
       header <- c("price", "volume", "unix_time", "buy_sell", "mark_lim", "misc")
-      
-      tryCatch({
-        colnames(curr_dat) <- header
-      }, warning = function(warn) {
-        print(paste0("Warning ", warn, " received"))
-      }, error = function(err) {
-        print(paste0("Error ", err, " received and caught (tryCatch)"))
-        print(curr_dat)
-        
-        stop("Header setting problem")
-      })
+      colnames(curr_dat) <- header
+
+      #============================================
       # convert the time to CET and then add it to the df
       curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
-
-      # add the current tick data to the dataframe
-      #out_dat <- rbind(out_dat, curr_dat)
-
+      print(max(curr_dat$time))
+      #============================================
       # update the since
       curr_since <- curr_trades$last
-      cat("Since updated to: ", curr_since, "\n")
+      #cat("Since updated to: ", curr_since, "\n")
 
-      # check timestamp for save
-      last_unix_time <- curr_dat[nrow(curr_dat),]$unix_time
-
- #     if(as.numeric(as.character(last_unix_time)) >= first_time) {
-
-      print("Writing file")
-      #more_data <- FALSE
+      #============================================
+      #print("Writing file")
       write_quote_df(curr_dat,
                      file_in,
                      pair_in,
                      folder_in)
-        # ,
-        #                eof = TRUE)
-      curr_dat <- NULL
-      curr_trades <- NULL
-      gc()
 
-      # } else {
-      #
-      #   print("Writing temp file")
-      #   write_quote_df(curr_dat,
-      #                  file_in)
-      #
-      # }
+      # reset the error retries
+      retries <- 0
+      }, warning = function(warn) {
+      print(paste0("Warning ", warn, " received"))
 
 
-    } # end while
-  return(curr_since)
+      }, error = function(err) {
+        print(paste0("Error ", err, " received and caught (tryCatch)"))
+        print(curr_trades$err)
+        print(curr_trades)
+        retries <- retries + 1
+        Sys.sleep(10)
+
+        if(retries == max_retries) {
+          more_data <- FALSE
+        }
+
+      })
+    }
 }
 
 # currently only one at a time
 pair_in <- pair <- "XLMXBT"
 folder_in <-  "/home/deckard/Desktop/kraken_data/XLMXBT"
 
-# get trades - check to see if file exists and update
+# currently this just gets all the data from the beginning
+get_historical_trades(pair, folder_in, 0)
 
-# currently this just gets all the data from the current time
-dat <- get_historical_trades(pair, folder_in, 0)
+1468968981.559
+1469298336.7172
 
-# file_in <- read.csv(file_in, header = FALSE)
-# head(file_in)
-# tail(file_in)
+curr_since <- 1469298336717245137
+curr_trades <- krakenR::get_recent_trades(pair_in,
+                                          curr_since)
 
-#=================================================
-# temp_in <- "/home/deckard/Desktop/kraken_data/XLMXBT_tick_temp.csv"
-# temp <- read.csv(temp_in, header = FALSE)
-# colnames(temp) <- c("price", "vol", "unix_time",
-#                        "buy_sell", "mark_lim", "misc", "time")
-# head(temp)
-# tail(temp)
-#
-# write.table(temp, file = file_in,
-#             row.names = FALSE,
-#             col.names = TRUE,
-#             sep = ",",
-#             append = FALSE)
+full_since <- curr_trades[[1]]
+nrow(full_since)
+head(full_since)
+# [,1]          [,2]            [,3]              [,4] [,5] [,6]
+# [1,] "0.000003500" "400.00000000"  "1469298342.3313" "b"  "m"  ""
+# [2,] "0.000003500" "400.00000000"  "1469298351.7677" "b"  "m"  ""
+# [3,] "0.000003500" "400.00000000"  "1469298355.3257" "b"  "m"  ""
+# [4,] "0.000003500" "400.00000000"  "1469298367.1669" "b"  "m"  ""
+# [5,] "0.000003500" "3711.42857142" "1469298367.8609" "b"  "m"  ""
+# [6,] "0.000003500" "400.00000000"  "1469298373.7157" "b"  "m"  ""
+tail(full_since)
+# [995,]  "0.000003360" "2284.07000000" "1469392469.0252" "s"  "l"  ""
+# [996,]  "0.000003360" "2247.45000000" "1469392478.0973" "s"  "l"  ""
+# [997,]  "0.000003360" "1612.47000000" "1469392489.693"  "s"  "l"  ""
+# [998,]  "0.000003360" "2287.35000000" "1469392502.0007" "s"  "l"  ""
+# [999,]  "0.000003360" "1554.84000000" "1469392516.1667" "s"  "l"  ""
+# [1000,] "0.000003360" "3010.15000000" "1469392525.472"  "s"  "l"  ""
+
+
+
+#curr_since <- 1469298336717245137
+curr_since <- 1469298336717200000
+# for new since remove decimal point and add five zeroes to the end
+curr_trades <- krakenR::get_recent_trades(pair_in,
+                                          curr_since)
+
+dec_since <- curr_trades[[1]]
+nrow(dec_since)
+head(dec_since)
+tail(dec_since)
