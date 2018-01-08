@@ -5,8 +5,9 @@ write_quote_df <- function(curr_dat,
                            folder_in) {
 
   start_date <- gsub(" ", "_", as.character(curr_dat$time[1]))
+  cat("start_date is", start_date, "\n")
   end_date <- gsub(" ", "_", as.character(curr_dat$time[nrow(curr_dat)]))
-
+  cat("end_date is", end_date, "\n")
   temp_file <- file.path(folder_in,
                          paste0(end_date, "__", start_date, "_", pair_in, ".csv"))
 

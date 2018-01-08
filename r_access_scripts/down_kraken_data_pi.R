@@ -4,12 +4,14 @@
 #'
 rm(list = ls())
 detach("package:krakenR", unload=TRUE)
+detach("package:krakenTools", unload=TRUE)
 library(krakenR)
 library(plyr)
 library(anytime)
 library(R.utils)
 library(dplyr)
 library(krakenTools)
+library(stringi)
 
 # to do:
 # now needs to be modified to get time from last file date
@@ -58,26 +60,26 @@ get_historical_trades <- function(pair_in, # pair to be read
       #============================================
       # convert the time to CET and then add it to the df
       curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
-      earliest <- max(curr_dat$time)
-      
-      # check the time and stop if less than 15 minutes old
-      print(earliest)
-      time_stop <- Sys.time() - (60*15)
-      stopifnot(time_stop > earliest)
+
       #============================================
       # update the since
       curr_since <- curr_trades$last
       #cat("Since updated to: ", curr_since, "\n")
 
       #============================================
-      #print("Writing file")
+      print("Writing file")
       write_quote_df(curr_dat,
                      file_in,
                      pair_in,
                      folder_in)
-
+      print("File written OK")
       # reset the error retries
       retries <- 0
+      
+      # get the earlist date from the current data
+      earliest <- max(curr_dat$time)
+      #print(earliest)
+      
       }, warning = function(warn) {
       print(paste0("Warning ", warn, " received"))
 
@@ -88,16 +90,86 @@ get_historical_trades <- function(pair_in, # pair to be read
         print(curr_trades)
         retries <- retries + 1
         Sys.sleep(10)
-
+        earliest <- 0
+        
         if(retries == max_retries) {
           more_data <- FALSE
         }
 
       })
-    }
+    
+
+    # check the time and stop if less than 30 mins old
+
+    time_stop <- Sys.time() - (60*30)
+    cat("time_stop is: ", time_stop, "\n")
+    cat("earliest is: ", earliest, "\n")
+    print(time_stop >= earliest)
+    
+    more_data <- ifelse(time_stop >= earliest,
+                       TRUE,
+                       FALSE)
+  }
 }
 
+# get the since from the most recent file or set to 0
+get_since <- function(folder_path) {
+  
+  # check for files in folder
+  folder_files <- list.files(folder_path)
+  #print(folder_files)
+  
+  if(length(folder_files) == 0) {
+    
+    return(curr_since <- 0)
+    
+  } else {
+    
+    max_date <- max(folder_files)
+    print(max_date)
+    csv_in <- read.csv(file.path(folder_path, max_date),
+                       header = TRUE,
+                       dec = ".")
+    # kraken needs 5 zeros after the reported since
+    # nsmall = 9 returns digits that appear correct (at first look
+    # but this really needs checking)
+    curr_since <- format(max(csv_in$unix_time), nsmall = 4)
+    new_since <- gsub("\\.", "", curr_since)
+    new_since <- stri_pad_right(new_since, 
+                                19,
+                                0)
+    #cat(" New since is: ", new_since, "\n")
+    
+    return(new_since)
+    
+  }
+}
 
+# take in the asset name, get the since and then
+# download the data
+process_asset <- function(asset_in,
+                          folder_root) {
+  
+  print("=====================================")
+  cat("Processing asset: ", asset_in, "\n")
+  
+  # set the data folder
+  folder_path <- file.path(folder_root, asset_in)
+  
+  # get the since
+  curr_since <- get_since(folder_path)
+  cat("Since is: ", curr_since, "\n")
+
+ 
+  # download the data
+  get_historical_trades(asset_in,
+                        folder_path,
+                        curr_since)
+  
+}
+
+#===================================================
+# Get asset information
 assets <- get_tradable_asset_pair()
 
 length(assets)
@@ -126,78 +198,31 @@ for(i in 1:length(assets)) {
   
 }
 
-# currently this just gets all the data from the beginning
+# remove those assets with '.d' at the end. I need to find out what this
+# relates to 
 ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE) 
 ass_l <- sort(ass_l)
 ass_l
 
-
 # [1] "BCHEUR"  "BCHUSD"  "BCHXBT"  "DASHEUR" "DASHUSD"
-# [6] "DASHXBT" "EOSETH"  "EOSXBT"  
-
-#                                    "ETCETH"  "ETCEUR" 
+# [6] "DASHXBT" "EOSETH"  "EOSXBT"  "ETCETH"  "ETCEUR" 
 # [11] "ETCUSD"  "ETCXBT"  "ETHCAD"  "ETHEUR"  "ETHGBP" 
 # [16] "ETHJPY"  "ETHUSD"  "ETHXBT"  "GNOETH"  "GNOXBT" 
-
 # [21] "ICNETH"  "ICNXBT"  "LTCEUR"  "LTCUSD"  "LTCXBT" 
 # [26] "MLNETH"  "MLNXBT"  "REPETH"  "REPEUR"  "REPXBT" 
-
 # [31] "USDTUSD" "XBTCAD"  "XBTEUR"  "XBTGBP"  "XBTJPY" 
 # [36] "XBTUSD"  "XDGXBT"  "XLMXBT"  "XMREUR"  "XMRUSD" 
-
 # [41] "XMRXBT"  "XRPEUR"  "XRPUSD"  "XRPXBT"  "ZECEUR" 
 # [46] "ZECUSD"  "ZECXBT" 
 
-ass_l1 <- ass_l[9:20]
-ass_l2 <- ass_l[21:30]
-ass_l3 <- ass_l[31:40]
-ass_l4 <- ass_l[41:47]
+#==============================================================================
+# Process the assets
+# process_asset(asset_in, folder_root)
 
-curr_ass_l <- ass_l4
-for(i in 1:length(curr_ass_l)) {
+#sapply(ass_l, process_asset, folder_root)
 
-  pair_in <- curr_ass_l[i]  
-  folder_in <-  file.path(folder_root, pair_in)
-  
-  get_historical_trades(pair_in, folder_in, 0)
-  
-  
-}
-# 
-# 1468968981.559
-# 1469298336.7172
-# 
-# curr_since <- 1469298336717245137
-# curr_trades <- krakenR::get_recent_trades(pair_in,
-#                                           curr_since)
-# 
-# full_since <- curr_trades[[1]]
-# nrow(full_since)
-# head(full_since)
-# # [,1]          [,2]            [,3]              [,4] [,5] [,6]
-# # [1,] "0.000003500" "400.00000000"  "1469298342.3313" "b"  "m"  ""
-# # [2,] "0.000003500" "400.00000000"  "1469298351.7677" "b"  "m"  ""
-# # [3,] "0.000003500" "400.00000000"  "1469298355.3257" "b"  "m"  ""
-# # [4,] "0.000003500" "400.00000000"  "1469298367.1669" "b"  "m"  ""
-# # [5,] "0.000003500" "3711.42857142" "1469298367.8609" "b"  "m"  ""
-# # [6,] "0.000003500" "400.00000000"  "1469298373.7157" "b"  "m"  ""
-# tail(full_since)
-# # [995,]  "0.000003360" "2284.07000000" "1469392469.0252" "s"  "l"  ""
-# # [996,]  "0.000003360" "2247.45000000" "1469392478.0973" "s"  "l"  ""
-# # [997,]  "0.000003360" "1612.47000000" "1469392489.693"  "s"  "l"  ""
-# # [998,]  "0.000003360" "2287.35000000" "1469392502.0007" "s"  "l"  ""
-# # [999,]  "0.000003360" "1554.84000000" "1469392516.1667" "s"  "l"  ""
-# # [1000,] "0.000003360" "3010.15000000" "1469392525.472"  "s"  "l"  ""
-# 
-# 
-# 
-# #curr_since <- 1469298336717245137
-# curr_since <- 1469298336717200000
-# # for new since remove decimal point and add five zeroes to the end
-# curr_trades <- krakenR::get_recent_trades(pair_in,
-#                                           curr_since)
-# 
-# dec_since <- curr_trades[[1]]
-# nrow(dec_since)
-# head(dec_since)
-# tail(dec_since)
+folder_path <- file.path(folder_root, "BCHEUR")
+
+process_asset("BCHEUR", folder_root)
+
+
