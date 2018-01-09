@@ -34,6 +34,7 @@ get_historical_trades <- function(pair_in, # pair to be read
   more_data <- TRUE # more data to be downloaded
   retries <- 0 # outside of the error loop so retries is 0
   max_retries <- 10
+  earliest <- 0
 
   #============================================================================
   # Data downloading
@@ -86,11 +87,13 @@ get_historical_trades <- function(pair_in, # pair to be read
 
       }, error = function(err) {
         print(paste0("Error ", err, " received and caught (tryCatch)"))
+        
         print(curr_trades$err)
         print(curr_trades)
+        
         retries <- retries + 1
+        
         Sys.sleep(10)
-        earliest <- 0
         
         if(retries == max_retries) {
           more_data <- FALSE
@@ -219,10 +222,10 @@ ass_l
 # Process the assets
 # process_asset(asset_in, folder_root)
 
-#sapply(ass_l, process_asset, folder_root)
+sapply(ass_l, process_asset, folder_root)
 
-folder_path <- file.path(folder_root, "BCHEUR")
-
-process_asset("BCHEUR", folder_root)
+# folder_path <- file.path(folder_root, "BCHEUR")
+# 
+# process_asset("BCHEUR", folder_root)
 
 
