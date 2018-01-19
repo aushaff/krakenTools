@@ -5,20 +5,74 @@
 #'@param date as character in the form: 31-01-2017
 get_day_asset_tick <- function(asset_in, date_in) {
   
-  options("digits.secs"=6)
+  options(digits.secs=9)
+  max_retries <- 10
+  retries <- 0 
+  date_start_str <- paste0(date_in, "T00:00:00:00.000001")
+  date_start <- as.numeric(strptime(date_start_str, format = "%d-%m-%YT%H:%M:%S:%OS"))
   
-  # this should be midnight
-  curr_date <- as.POSIXlt(date_in, format = "%d-%m-%Y")
-  mySeet <- 1000*(curr_date$hour*3600 + curr_date$min*60 + curr_date$sec)
-  curr_date_num <- as.numeric(curr_date)
-  test <- 14858172000000000000
-  curr_dat <- krakenR::get_recent_trades(asset_in,
-                                         test)
-}
+  date_end_str <- paste0(date_in, "T23:59:59:00.999999")
+  #as.numeric(strptime(date_end_str, format = "%d-%m-%YT%H:%M:%S:%OS"))
+  date_end <- as.numeric(strptime(date_end_str, format = "%d-%m-%YT%H:%M:%S:%OS"))
+  
+  #mySeet <- 1000*(curr_date$hour*3600 + curr_date$min*60 + curr_date$sec)
+  #curr_date_num <- as.numeric(curr_date)
+  
+  #curr_since <- format(1512946800, nsmall = 4)
+  #ew_since <- gsub("\\.", "", curr_since)
+  curr_since <- stri_pad_right(date_start, 
+                              19,
+                              0)
+  
+  more_data <- TRUE
+  
+  while(more_data) {
+    
+    # get the data from current since
+    tryCatch({
+      
+      curr_trades <- krakenR::get_recent_trades(asset_in, curr_since)
+      
+      curr_dat <- data.frame(curr_trades[[1]])
+      header <- c("price", "volume", "unix_time", "buy_sell", "mark_lim", "misc")
+      colnames(curr_dat) <- header
+      
+      #============================================
+      # convert the time to CET and then add it to the df
+      curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
+      
+      #============================================
+      # update the since
+      curr_since <- curr_trades$last
+      
+      if(curr_since > date_end) {
+        more_data <- FALSE
+      }
+      
+    }, warning = function(warn) {
+
+    }, error = function(err) {
+
+      print(err)
+      retries <- retries + 1
+      
+      Sys.sleep(10)
+      
+      if(retries == max_retries) {
+        cat("Maximum retries reached: ABORTED", "\n")
+        more_data <- FALSE
+      }
+      
+    }) # end tryCatch
+     
+  } # end while
+  
+} # end function
 
 library(krakenR)
-date_in <- "31-01-2017"
-asset_in <- "XLMXBT"
+library(anytime)
+date_in <- "11-12-2017"
+asset_in <- "XBTEUR"
 
 as.Date(date, format = "%d-%m-%Y")
 
@@ -27,7 +81,7 @@ num_tn <- as.numeric(as.POSIXlt(Sys.time()))
 num_tn
 since_m <- num_tn$hour*3600 + num_tn$min*60 + num_tn$sec
 since_m
-as.POSIXct(num_tn - since_m, origin = '1970-01-01')
+as.POSIXlt(1513035169.2036, origin = '1970-01-01')
 
 
 # to do:
