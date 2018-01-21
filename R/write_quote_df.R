@@ -48,12 +48,25 @@ write_quote_df <- function(curr_dat,
   #
   #
   # } else {
-
+  tryCatch({
+    
     write.table(curr_dat, file = temp_file,
                 row.names = FALSE,
                 col.names = TRUE,
                 sep = ",",
                 append = FALSE)
- #}
+
+  }, warning = function(warn) {
+    
+    print(paste0("Warning ", warn, " received saving file"))
+    stop()
+    
+  }, error = function(err) {
+    
+    print(paste0("Error ", err, " received saving file"))
+    stop()
+    
+  })
+     #}
 
 }

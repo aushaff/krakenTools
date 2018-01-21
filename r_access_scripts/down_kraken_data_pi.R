@@ -12,7 +12,10 @@ library(R.utils)
 library(dplyr)
 library(krakenTools)
 library(stringi)
+library(curl)
 
+# x <- c("plyr", "anytime", "R.utils", "dplyr", "stringi")
+# install.packages(x)
 # to do:
 # now needs to be modified to get time from last file date
 # this will need to adjust the unix time and check for duplicate rows:
@@ -69,11 +72,23 @@ get_historical_trades <- function(pair_in, # pair to be read
 
       #============================================
       print("Writing file")
-      write_quote_df(curr_dat,
-                     file_in,
-                     pair_in,
-                     folder_in)
-      print("File written OK")
+      tryCatch({
+        write_quote_df(curr_dat,
+                       file_in,
+                       pair_in,
+                       folder_in)
+        print("File written OK")
+      }, warning = function(warn) {
+        
+        print(paste0("Warning ", warn, " received saving file"))
+        stop()
+        
+      }, error = function(err) {
+        
+        print(paste0("Error ", err, " received saving file"))
+        stop()
+        
+      })
       # reset the error retries
       retries <- 0
       
@@ -189,7 +204,7 @@ length(assets)
 # [49] "XLMXBT"   "XMRXBT"   "XMREUR"   "XMRUSD"   "XRPXBT"   "XRPEUR"  
 # [55] "XRPUSD"   "ZECXBT"   "ZECEUR"   "ZECUSD"  
 
-folder_root <- "/media/External/data/kraken"
+folder_root <- "/media/deckard/External/data/kraken"
 
 ass_l <- c()
 
@@ -197,7 +212,7 @@ for(i in 1:length(assets)) {
   
   curr_asset <- assets[[i]]$altname
   ass_l <- c(ass_l, curr_asset)
-  dir.create(file.path(folder_root, curr_asset))
+  #dir.create(file.path(folder_root, curr_asset))
   
 }
 
@@ -218,6 +233,7 @@ ass_l
 # [41] "XMRXBT"  "XRPEUR"  "XRPUSD"  "XRPXBT"  "ZECEUR" 
 # [46] "ZECUSD"  "ZECXBT" 
 
+ass_l <- rev(ass_l)
 #==============================================================================
 # Process the assets
 # process_asset(asset_in, folder_root)
@@ -226,6 +242,6 @@ sapply(ass_l, process_asset, folder_root)
 
 # folder_path <- file.path(folder_root, "BCHEUR")
 # 
-# process_asset("BCHEUR", folder_root)
+process_asset("XBTCAD", folder_root)
 
 
