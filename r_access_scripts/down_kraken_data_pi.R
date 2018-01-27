@@ -76,7 +76,8 @@ get_historical_trades <- function(pair_in, # pair to be read
         write_quote_df(curr_dat,
                        file_in,
                        pair_in,
-                       folder_in)
+                       folder_in, 
+                       last_since = curr_since)
         print("File written OK")
       }, warning = function(warn) {
         
@@ -242,6 +243,6 @@ folder_root <- "/media/deckard/External/data/kraken"
 
 # folder_path <- file.path(folder_root, "BCHEUR")
 # 
-process_asset("ICNXBT", folder_root)
+process_asset("XBTEUR", folder_root)
 
 
