@@ -103,10 +103,9 @@ get_historical_trades <- function(pair_in, # pair to be read
       }, error = function(err) {
         print(paste0("Error ", err, " received and caught (tryCatch)"))
         
-        print(curr_trades$err)
-        print(curr_trades)
         
         retries <- retries + 1
+        cat("Number of retries is: ", retries, "\n")
         
         Sys.sleep(10)
         
@@ -134,7 +133,8 @@ get_historical_trades <- function(pair_in, # pair to be read
 get_since <- function(folder_path) {
   
   # check for files in folder
-  folder_files <- list.files(folder_path)
+  folder_files <- list.files(folder_path, 
+                             pattern = ".csv" )
   #print(folder_files)
   
   if(length(folder_files) == 0) {
@@ -206,42 +206,42 @@ length(assets)
 
 folder_root <- "/media/deckard/External/data/kraken"
 
-ass_l <- c()
-
-for(i in 1:length(assets)) {
-  
-  curr_asset <- assets[[i]]$altname
-  ass_l <- c(ass_l, curr_asset)
-  #dir.create(file.path(folder_root, curr_asset))
-  
-}
-
-# remove those assets with '.d' at the end. I need to find out what this
-# relates to 
-ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE) 
-ass_l <- sort(ass_l)
-ass_l
-
-# [1] "BCHEUR"  "BCHUSD"  "BCHXBT"  "DASHEUR" "DASHUSD"
-# [6] "DASHXBT" "EOSETH"  "EOSXBT"  "ETCETH"  "ETCEUR" 
-# [11] "ETCUSD"  "ETCXBT"  "ETHCAD"  "ETHEUR"  "ETHGBP" 
-# [16] "ETHJPY"  "ETHUSD"  "ETHXBT"  "GNOETH"  "GNOXBT" 
-# [21] "ICNETH"  "ICNXBT"  "LTCEUR"  "LTCUSD"  "LTCXBT" 
-# [26] "MLNETH"  "MLNXBT"  "REPETH"  "REPEUR"  "REPXBT" 
-# [31] "USDTUSD" "XBTCAD"  "XBTEUR"  "XBTGBP"  "XBTJPY" 
-# [36] "XBTUSD"  "XDGXBT"  "XLMXBT"  "XMREUR"  "XMRUSD" 
-# [41] "XMRXBT"  "XRPEUR"  "XRPUSD"  "XRPXBT"  "ZECEUR" 
-# [46] "ZECUSD"  "ZECXBT" 
-
-ass_l <- rev(ass_l)
-#==============================================================================
+# ass_l <- c()
+# 
+# for(i in 1:length(assets)) {
+#   
+#   curr_asset <- assets[[i]]$altname
+#   ass_l <- c(ass_l, curr_asset)
+#   #dir.create(file.path(folder_root, curr_asset))
+#   
+# }
+# 
+# # remove those assets with '.d' at the end. I need to find out what this
+# # relates to 
+# ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE) 
+# ass_l <- sort(ass_l)
+# ass_l
+# 
+# # [1] "BCHEUR"  "BCHUSD"  "BCHXBT"  "DASHEUR" "DASHUSD"
+# # [6] "DASHXBT" "EOSETH"  "EOSXBT"  "ETCETH"  "ETCEUR" 
+# # [11] "ETCUSD"  "ETCXBT"  "ETHCAD"  "ETHEUR"  "ETHGBP" 
+# # [16] "ETHJPY"  "ETHUSD"  "ETHXBT"  "GNOETH"  "GNOXBT" 
+# # [21] "ICNETH"  "ICNXBT"  "LTCEUR"  "LTCUSD"  "LTCXBT" 
+# # [26] "MLNETH"  "MLNXBT"  "REPETH"  "REPEUR"  "REPXBT" 
+# # [31] "USDTUSD" "XBTCAD"  "XBTEUR"  "XBTGBP"  "XBTJPY" 
+# # [36] "XBTUSD"  "XDGXBT"  "XLMXBT"  "XMREUR"  "XMRUSD" 
+# # [41] "XMRXBT"  "XRPEUR"  "XRPUSD"  "XRPXBT"  "ZECEUR" 
+# # [46] "ZECUSD"  "ZECXBT" 
+# 
+# ass_l <- rev(ass_l)
+# #==============================================================================
 # Process the assets
 # process_asset(asset_in, folder_root)
 
-sapply(ass_l, process_asset, folder_root)
+#sapply(ass_l, process_asset, folder_root)
 
 # folder_path <- file.path(folder_root, "BCHEUR")
 # 
-process_asset("XBTCAD", folder_root)
+process_asset("ICNXBT", folder_root)
 
 
