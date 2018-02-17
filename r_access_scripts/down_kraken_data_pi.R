@@ -173,7 +173,9 @@ process_asset <- function(asset_in,
   cat("Processing asset: ", asset_in, "\n")
   
   # set the data folder
-  folder_path <- file.path(folder_root, asset_in)
+  folder_path <- file.path(folder_root, 
+                           asset_in, 
+                           "raw_data")
   
   # get the since
   curr_since <- get_since(folder_path)

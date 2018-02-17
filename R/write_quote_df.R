@@ -10,7 +10,7 @@ write_quote_df <- function(curr_dat,
   end_date <- gsub(" ", "_", as.character(curr_dat$time[nrow(curr_dat)]))
   cat("end_date is", end_date, "\n")
   
-  out_folder <- file.path(folder_in, "raw_data")
+  out_folder <- file.path(folder_in)
   temp_file <- file.path(out_folder,
                          paste0(last_since, "_", 
                                 end_date, "__", 
