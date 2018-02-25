@@ -10,4 +10,4 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Imports:
-	krakenR, gtools
+	krakenR, gtools, data.table, bit64
