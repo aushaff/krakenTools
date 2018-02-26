@@ -2,27 +2,6 @@
 #'@description uses the krakenR package to download all historical tick
 #'data for the specified pair
 #'
-rm(list = ls())
-detach("package:krakenR", unload=TRUE)
-detach("package:krakenTools", unload=TRUE)
-library(krakenR)
-library(plyr)
-library(anytime)
-library(R.utils)
-library(dplyr)
-library(krakenTools)
-library(stringi)
-library(curl)
-
-# x <- c("plyr", "anytime", "R.utils", "dplyr", "stringi")
-# install.packages(x)
-# to do:
-# now needs to be modified to get time from last file date
-# this will need to adjust the unix time and check for duplicate rows:
-# for new since remove decimal point and add five zeroes to the end
-#now have all the data need to modify to et most recent
-# batch run on pi?
-
 #==============================================================================
 # pair in e.g.: ETHEUR
 # file_in e.g.: path/file.csv
@@ -118,7 +97,6 @@ get_historical_trades <- function(pair_in, # pair to be read
     
 
     # check the time and stop if less than 30 mins old
-
     time_stop <- Sys.time() - (60*30)
     cat("time_stop is: ", time_stop, "\n")
     cat("earliest is: ", earliest, "\n")
@@ -144,20 +122,11 @@ get_since <- function(folder_path) {
     
   } else {
     
+    # get the most recent date
     max_date <- max(folder_files)
-    print(max_date)
-    csv_in <- read.csv(file.path(folder_path, max_date),
-                       header = TRUE,
-                       dec = ".")
-    # kraken needs 5 zeros after the reported since
-    # nsmall = 9 returns digits that appear correct (at first look
-    # but this really needs checking)
-    curr_since <- format(max(csv_in$unix_time), nsmall = 4)
-    new_since <- gsub("\\.", "", curr_since)
-    new_since <- stri_pad_right(new_since, 
-                                19,
-                                0)
-    #cat(" New since is: ", new_since, "\n")
+    
+    new_since <- strsplit(max_date, "_")[[1]][1]
+    cat(" New since is: ", new_since, "\n")
     
     return(new_since)
     
@@ -188,63 +157,4 @@ process_asset <- function(asset_in,
                         curr_since)
   
 }
-
-#===================================================
-# Get asset information
-assets <- get_tradable_asset_pair()
-
-length(assets)
-# 58
-
-# [1] "BCHEUR"   "BCHUSD"   "BCHXBT"   "DASHEUR"  "DASHUSD"  "DASHXBT" 
-# [7] "EOSETH"   "EOSXBT"   "GNOETH"   "GNOXBT"   "USDTUSD"  "ETCETH"  
-# [13] "ETCXBT"   "ETCEUR"   "ETCUSD"   "ETHXBT"   "ETHXBT.d" "ETHCAD"  
-# [19] "ETHCAD.d" "ETHEUR"   "ETHEUR.d" "ETHGBP"   "ETHGBP.d" "ETHJPY"  
-# [25] "ETHJPY.d" "ETHUSD"   "ETHUSD.d" "ICNETH"   "ICNXBT"   "LTCXBT"  
-# [31] "LTCEUR"   "LTCUSD"   "MLNETH"   "MLNXBT"   "REPETH"   "REPXBT"  
-# [37] "REPEUR"   "XBTCAD"   "XBTCAD.d" "XBTEUR"   "XBTEUR.d" "XBTGBP"  
-# [43] "XBTGBP.d" "XBTJPY"   "XBTJPY.d" "XBTUSD"   "XBTUSD.d" "XDGXBT"  
-# [49] "XLMXBT"   "XMRXBT"   "XMREUR"   "XMRUSD"   "XRPXBT"   "XRPEUR"  
-# [55] "XRPUSD"   "ZECXBT"   "ZECEUR"   "ZECUSD"  
-
-folder_root <- "/media/deckard/External/data/kraken"
-
-# ass_l <- c()
-# 
-# for(i in 1:length(assets)) {
-#   
-#   curr_asset <- assets[[i]]$altname
-#   ass_l <- c(ass_l, curr_asset)
-#   #dir.create(file.path(folder_root, curr_asset))
-#   
-# }
-# 
-# # remove those assets with '.d' at the end. I need to find out what this
-# # relates to 
-# ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE) 
-# ass_l <- sort(ass_l)
-# ass_l
-# 
-# # [1] "BCHEUR"  "BCHUSD"  "BCHXBT"  "DASHEUR" "DASHUSD"
-# # [6] "DASHXBT" "EOSETH"  "EOSXBT"  "ETCETH"  "ETCEUR" 
-# # [11] "ETCUSD"  "ETCXBT"  "ETHCAD"  "ETHEUR"  "ETHGBP" 
-# # [16] "ETHJPY"  "ETHUSD"  "ETHXBT"  "GNOETH"  "GNOXBT" 
-# # [21] "ICNETH"  "ICNXBT"  "LTCEUR"  "LTCUSD"  "LTCXBT" 
-# # [26] "MLNETH"  "MLNXBT"  "REPETH"  "REPEUR"  "REPXBT" 
-# # [31] "USDTUSD" "XBTCAD"  "XBTEUR"  "XBTGBP"  "XBTJPY" 
-# # [36] "XBTUSD"  "XDGXBT"  "XLMXBT"  "XMREUR"  "XMRUSD" 
-# # [41] "XMRXBT"  "XRPEUR"  "XRPUSD"  "XRPXBT"  "ZECEUR" 
-# # [46] "ZECUSD"  "ZECXBT" 
-# 
-# ass_l <- rev(ass_l)
-# #==============================================================================
-# Process the assets
-# process_asset(asset_in, folder_root)
-
-#sapply(ass_l, process_asset, folder_root)
-
-# folder_path <- file.path(folder_root, "BCHEUR")
-# 
-process_asset("XBTEUR", folder_root)
-
 

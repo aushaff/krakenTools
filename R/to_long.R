@@ -1,7 +1,7 @@
 #'@title To long df
 #'@description Convert downloaded data to long dataframe
 #'
-to_long <- function(folder_root, in_curr) {
+to_long <- function(in_curr, folder_root) {
   
   # get all filenames from the raw_data directory
   # order them by unix date
@@ -18,6 +18,7 @@ to_long <- function(folder_root, in_curr) {
   # if doesnt exist:
   if(!file_exists) {
   
+    dir.create(dp_dir)
     # take the earliest file from all files
     curr_file <- min(all_files)
     
@@ -82,7 +83,7 @@ to_long <- function(folder_root, in_curr) {
                     verbose = TRUE)
              })
 
-  # load in file and check for (and remove) duplicates
+  # load in file and check for (and return existence of) duplicates
   long_file <- fread(file.path(dp_dir, long_filename),
                      sep = ";")
   return(anyDuplicated(long_file))
