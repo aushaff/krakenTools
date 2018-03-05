@@ -23,23 +23,23 @@ to_long <- function(in_curr, folder_root) {
     curr_file <- min(all_files)
     
     # read it in 
-    new_long_df <- fread(file.path(raw_dir, curr_file))
+    new_long_df <- data.table::fread(file.path(raw_dir, curr_file))
     new_long_df$last <- strsplit(curr_file, "_")[[1]][1]
     
     # save it 
-    fwrite(new_long_df, file.path(dp_dir, long_filename),
-           append = FALSE,
-           sep = ";",
-           row.names = FALSE,
-           col.names = TRUE)
-    
+    data.table::fwrite(new_long_df, file.path(dp_dir, long_filename),
+                       append = FALSE,
+                       sep = ";",
+                       row.names = FALSE,
+                       col.names = TRUE)
+                
     cat("New long file created", "\n")
   } 
   
   # read in the existing long_df and catch an error
   tryCatch({
       
-    old_long_df <- fread(file.path(dp_dir, long_filename))
+    old_long_df <- data.table::fread(file.path(dp_dir, long_filename))
   }, warning = function(warn) {
     print(warn)
   }, error = function(err) {
@@ -67,7 +67,7 @@ to_long <- function(in_curr, folder_root) {
   # append the curr_files to the existing dataframe
   sapply(curr_files, 
            function(curr_file) {
-             in_file <- fread(file.path(raw_dir, curr_file))
+             in_file <- data.table::fread(file.path(raw_dir, curr_file))
              in_file$last <- strsplit(curr_file, "_")[[1]][1]
              
              # check to ensure that we are adding data of the
@@ -75,16 +75,16 @@ to_long <- function(in_curr, folder_root) {
              stopifnot(ncol(in_file)==8)
              
              # then write
-             fwrite(in_file, file.path(dp_dir, long_filename),
-                    append = TRUE,
-                    sep = ";",
-                    row.names = FALSE,
-                    col.names = FALSE,
-                    verbose = TRUE)
+             data.table::fwrite(in_file, file.path(dp_dir, long_filename),
+                                append = TRUE,
+                                sep = ";",
+                                row.names = FALSE,
+                                col.names = FALSE,
+                                verbose = TRUE)
              })
 
   # load in file and check for (and return existence of) duplicates
-  long_file <- fread(file.path(dp_dir, long_filename),
+  long_file <- data.table::fread(file.path(dp_dir, long_filename),
                      sep = ";")
   return(anyDuplicated(long_file))
   
