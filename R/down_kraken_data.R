@@ -42,11 +42,11 @@ get_historical_trades <- function(pair_in, # pair to be read
 
       #============================================
       # convert the time to CET and then add it to the df
-      curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
+      #curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
 
       #============================================
       # update the since
-      curr_since <- curr_trades$last
+      #curr_since <- curr_trades$last
       #cat("Since updated to: ", curr_since, "\n")
 
       #============================================
