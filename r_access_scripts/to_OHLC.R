@@ -8,8 +8,8 @@ to_OHLC <- function(in_curr, folder_root, period) {
 }
 
 in_curr <- c("XBTEUR")
-#folder_root <- "/media/deckard/External/data/kraken"
-folder_root <- getwd()
+folder_root <- "/media/deckard/External/data/kraken"
+#folder_root <- getwd()
 dp_dir <- file.path(folder_root, in_curr, "data_products")  
 long_filename <- paste0(in_curr, "_long_all_tick_data.csv")
 
@@ -19,16 +19,22 @@ system.time(long_file <- data.table::fread(file.path(dp_dir, long_filename),
 #   user  system elapsed 
 # 59.930   3.770  83.678 
 
-long_sub <- data.table::fread(file.path("data", "long_sub.csv"),
-                              stringsAsFactors = FALSE,
-                              dec = ".")
-myxts <- xts(long_sub[, c("price", "volume")], 
-             order.by = anytime::anytime(long_sub$unix_time))
 
-plot(myxts)
+# long_sub <- data.table::fread(file.path("data", "long_sub.csv"),
+#                               stringsAsFactors = FALSE,
+#                               dec = ".")
+# long_sub <- long_file[1:6,]
+# 
+# myxts <- xts(long_sub[, c("price", "volume")],
+#             order.by = anytime::anytime(long_sub$unix_time))
+# 
+# plot(myxts$price)
 
+system.time(long_myxts <- xts(long_file[, c("price", "volume")],
+             order.by = anytime::anytime(long_file$unix_time)))
 
-
+#saveRDS(long_sub, file.path(dp_dir, "delete_long_sub.rds"))
+system.time(saveRDS(long_myxts, file.path(dp_dir, "XBTEUR_long_xts.rds")))
 
 
 
