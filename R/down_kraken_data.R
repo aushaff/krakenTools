@@ -46,8 +46,8 @@ get_historical_trades <- function(pair_in, # pair to be read
 
       #============================================
       # update the since
-      #curr_since <- curr_trades$last
-      #cat("Since updated to: ", curr_since, "\n")
+      curr_since <- curr_trades$last
+      cat("Since updated to: ", curr_since, "\n")
 
       #============================================
       print("Writing file")
