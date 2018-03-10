@@ -78,3 +78,12 @@ system.time(saveRDS(one_day, file.path(dp_dir, "XBTEUR_OHLC_one_day_xts.rds")))
 plot(one_min)
 plot()
 plot(one_day)
+
+library(xts)
+# from 4 hour
+system.time(four_hour <- readRDS(file.path(dp_dir, 
+                                           "XBTEUR_OHLC_four_hour_xts.rds")))
+names(four_hour) <- c("Open", "High", "Low", "Close", "Volume")
+library(quantmod)
+chartSeries(four_hour)
+candleChart(four_hour, multi.col=TRUE, theme='white')
