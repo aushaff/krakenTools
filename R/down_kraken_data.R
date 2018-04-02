@@ -84,9 +84,12 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       #============================================
       # extract the error if there is one
-      if(curr_trades$error != 0) {
-        print(paste0("Error received from Kraken: ", curr_trades$error))
-      }
+      tryCatch({
+        if(curr_trades$error != 0) {
+          print(paste0("Error received from Kraken: ", curr_trades$error))
+        }
+      })
+      
  
       # increase the number of retries 
       retries <<- retries + 1
