@@ -31,7 +31,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       print(paste0("Current since is: ", curr_since))
       curr_trades <- krakenR::get_recent_trades(pair_in,
                                                 curr_since)
-      print("curr_trades returned")
+      #print("curr_trades returned")
       #print(curr_trades)
       
       #============================================
@@ -53,7 +53,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       retries <- 0
       
       #============================================
-      print("Writing file")
+      #print("Writing file")
       krakenTools::write_quote_df(curr_dat,
                                   file_in,
                                   pair_in,
@@ -65,8 +65,8 @@ get_historical_trades <- function(pair_in, # pair to be read
       # get the earlist date from the current data
       earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
       
-      # check the time and stop if less than 30 mins old
-      time_stop <- Sys.time() - (60*30)
+      # check the time and stop if less than 1 hour old
+      time_stop <- Sys.time() - (60*60)
       cat("time_stop is: ", time_stop, "\n")
       cat("earliest is: ", earliest, "\n")
       print(time_stop >= earliest)

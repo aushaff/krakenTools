@@ -5,10 +5,10 @@ write_quote_df <- function(curr_dat,
                            folder_in,
                            last_since) {
 
-  start_date <- gsub(" ", "_", as.character(curr_dat$time[1]))
-  cat("start_date is", start_date, "\n")
-  end_date <- gsub(" ", "_", as.character(curr_dat$time[nrow(curr_dat)]))
-  cat("end_date is", end_date, "\n")
+  # start_date <- gsub(" ", "_", as.character(curr_dat$time[1]))
+  # cat("start_date is", start_date, "\n")
+  # end_date <- gsub(" ", "_", as.character(curr_dat$time[nrow(curr_dat)]))
+  # cat("end_date is", end_date, "\n")
   
   # ensure that the save location exists 
   out_folder <- file.path(folder_in)
