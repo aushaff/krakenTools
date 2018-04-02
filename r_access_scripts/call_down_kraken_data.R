@@ -48,5 +48,5 @@ sapply(ass_l, function(curr_asset) {
   #to_long(curr_asset, folder_root)
 })
 
-ass_l <- "BCHEUR"
+ass_l <- c("XLMEUR", "XLMUSD", "XLMXBT")
 

@@ -24,9 +24,8 @@ write_quote_df <- function(curr_dat,
   
   # complete path and filename
   temp_file <- file.path(out_folder,
-                         paste0(last_since, "_", 
-                                end_date, "__", 
-                                start_date, "_", pair_in, ".csv"))
+                         paste0(last_since, "____", 
+                                pair_in, ".csv"))
 
   tryCatch({
     

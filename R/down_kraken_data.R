@@ -8,13 +8,12 @@
 get_historical_trades <- function(pair_in, # pair to be read
                                   folder_in, # data folder
                                   curr_since # time to collect data
-                                                      # from; 0 = now
                                   ) {
 
   #========================================================
   # Setup
   more_data <- TRUE # more data to be downloaded
-  retries <- 0 # outside of the error loop so retries is 0
+  retries <- 0 
   max_retries <- 10
   earliest <- 0
 
@@ -37,76 +36,72 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       #============================================
       # extract the data and provide column headers
-      curr_dat <- data.frame(curr_trades[[1]])
-      header <- c("price", "volume", "unix_time", "buy_sell", "mark_lim", "misc")
+      curr_dat <- data.frame(curr_trades$result[[1]])
+      
+      header <- c("price", "volume", "unix_time", 
+                  "buy_sell", "mark_lim", "misc")
+      
       colnames(curr_dat) <- header
       
-    }, warning = function(warn) {
-      print(paste0("Warning ", warn, " received"))
+      #===========================================
+      # update the since
+      curr_since <- curr_trades$result[[2]]
+      cat("Since updated to: ", curr_since, "\n")
       
+      #============================================
+      # reset the error retries
+      retries <- 0
       
-    }, error = function(err) {
-      
-      print(paste0("Error ", err, " received getting data from Kraken"))
-      
-      
-      retries <- retries + 1
-      cat("Number of retries is: ", retries, "\n")
-      
-      Sys.sleep(10)
-      
-      if(retries == max_retries) {
-        more_data <- FALSE
-      }
-      
-    })
-      
-      
-
-
-    #============================================
-    # update the since
-    curr_since <- curr_trades$last
-    cat("Since updated to: ", curr_since, "\n")
-
-    #============================================
-    # reset the error retries
-    retries <- 0
-    
-    #============================================
-    print("Writing file")
-    tryCatch({
+      #============================================
+      print("Writing file")
       krakenTools::write_quote_df(curr_dat,
                                   file_in,
                                   pair_in,
                                   folder_in, 
                                   last_since = curr_since)
       print("File written OK")
+
+      #============================================
+      # get the earlist date from the current data
+      earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
+      
+      # check the time and stop if less than 30 mins old
+      time_stop <- Sys.time() - (60*30)
+      cat("time_stop is: ", time_stop, "\n")
+      cat("earliest is: ", earliest, "\n")
+      print(time_stop >= earliest)
+      
+      more_data <- ifelse(time_stop >= earliest,
+                          TRUE,
+                          FALSE)
+      
     }, warning = function(warn) {
-      
-      print(paste0("Warning ", warn, " received saving file"))
-      stop()
-      
+      print(warn)
+   
     }, error = function(err) {
       
-      print(paste0("Error ", err, " received saving file"))
-      stop()
+      print(err)
       
+      #============================================
+      # extract the error if there is one
+      if(curr_trades$error != 0) {
+        print(paste0("Error received from Kraken: ", curr_trades$error))
+      }
+ 
+      # increase the number of retries 
+      retries <<- retries + 1
+      # cat("Number of retries is: ", retries, "\n")
+      # cat("Max retries is: ", max_retries, "\n")
+      # cat("More data is: ", more_data, "\n")
+      
+      # see if we are at the maximum
+      if(retries > max_retries) {
+        more_data <<- FALSE
+      }
+      
+      # if not wait to try again
+      Sys.sleep(10)
     })
-    
-    #============================================
-    # get the earlist date from the current data
-    earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
-
-    # check the time and stop if less than 30 mins old
-    time_stop <- Sys.time() - (60*30)
-    cat("time_stop is: ", time_stop, "\n")
-    cat("earliest is: ", earliest, "\n")
-    print(time_stop >= earliest)
-    
-    more_data <- ifelse(time_stop >= earliest,
-                       TRUE,
-                       FALSE)
   }
 }
 
