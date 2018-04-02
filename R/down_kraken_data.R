@@ -31,70 +31,72 @@ get_historical_trades <- function(pair_in, # pair to be read
       print(paste0("Current asset is: ", pair_in))
       print(paste0("Current since is: ", curr_since))
       curr_trades <- krakenR::get_recent_trades(pair_in,
-                                                  curr_since)
+                                                curr_since)
       print("curr_trades returned")
       #print(curr_trades)
+      
       #============================================
       # extract the data and provide column headers
       curr_dat <- data.frame(curr_trades[[1]])
       header <- c("price", "volume", "unix_time", "buy_sell", "mark_lim", "misc")
       colnames(curr_dat) <- header
-
-      #============================================
-      # convert the time to CET and then add it to the df
-      #curr_dat$time <- anytime(as.numeric(as.character(curr_dat$unix_time)))
-
-      #============================================
-      # update the since
-      curr_since <- curr_trades$last
-      cat("Since updated to: ", curr_since, "\n")
-
-      #============================================
-      print("Writing file")
-      tryCatch({
-        write_quote_df(curr_dat,
-                       file_in,
-                       pair_in,
-                       folder_in, 
-                       last_since = curr_since)
-        print("File written OK")
-      }, warning = function(warn) {
-        
-        print(paste0("Warning ", warn, " received saving file"))
-        stop()
-        
-      }, error = function(err) {
-        
-        print(paste0("Error ", err, " received saving file"))
-        stop()
-        
-      })
-      # reset the error retries
-      retries <- 0
       
-      # get the earlist date from the current data
-      earliest <- max(curr_dat$time)
-      #print(earliest)
-      
-      }, warning = function(warn) {
+    }, warning = function(warn) {
       print(paste0("Warning ", warn, " received"))
+      
+      
+    }, error = function(err) {
+      
+      print(paste0("Error ", err, " received getting data from Kraken"))
+      
+      
+      retries <- retries + 1
+      cat("Number of retries is: ", retries, "\n")
+      
+      Sys.sleep(10)
+      
+      if(retries == max_retries) {
+        more_data <- FALSE
+      }
+      
+    })
+      
+      
 
 
-      }, error = function(err) {
-        print(paste0("Error ", err, " received and caught (tryCatch)"))
-        
-        
-        retries <- retries + 1
-        cat("Number of retries is: ", retries, "\n")
-        
-        Sys.sleep(10)
-        
-        if(retries == max_retries) {
-          more_data <- FALSE
-        }
+    #============================================
+    # update the since
+    curr_since <- curr_trades$last
+    cat("Since updated to: ", curr_since, "\n")
 
-      })
+    #============================================
+    # reset the error retries
+    retries <- 0
     
+    #============================================
+    print("Writing file")
+    tryCatch({
+      krakenTools::write_quote_df(curr_dat,
+                                  file_in,
+                                  pair_in,
+                                  folder_in, 
+                                  last_since = curr_since)
+      print("File written OK")
+    }, warning = function(warn) {
+      
+      print(paste0("Warning ", warn, " received saving file"))
+      stop()
+      
+    }, error = function(err) {
+      
+      print(paste0("Error ", err, " received saving file"))
+      stop()
+      
+    })
+    
+    #============================================
+    # get the earlist date from the current data
+    earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
 
     # check the time and stop if less than 30 mins old
     time_stop <- Sys.time() - (60*30)

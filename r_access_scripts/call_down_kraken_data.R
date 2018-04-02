@@ -1,6 +1,7 @@
+library(krakenR)
 #===================================================
 # Get asset information
-assets <- get_tradable_asset_pair()
+assets <- krakenR::get_tradable_asset_pair()
 
 length(assets)
 # 68
@@ -20,7 +21,7 @@ ass_l <- unlist(lapply(assets, get_asset_names))
 # relates to
 ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE)
 ass_l <- sort(ass_l)
-ass_l
+#ass_l <- rev(ass_l)
 
 # "BCHEUR"  "BCHUSD"  "BCHXBT" "DASHEUR" "DASHUSD" "DASHXBT"  "EOSETH" 
 # "EOSEUR"  "EOSUSD"  "EOSXBT"  "ETCETH"  "ETCEUR"  "ETCUSD"  "ETCXBT" 
@@ -44,8 +45,8 @@ folder_root <- "/media/deckard/External/data/kraken"
 sapply(ass_l, function(curr_asset) {
   
   process_asset(curr_asset, folder_root)  
-  to_long(curr_asset, folder_root)
+  #to_long(curr_asset, folder_root)
 })
 
-
+ass_l <- "BCHEUR"
 
