@@ -19,6 +19,7 @@ write_quote_df <- function(curr_dat,
     cat("Folder created: ", "\n")
     print(out_folder)
   }
+  
   # stop if it doesn't
   stopifnot(dir.exists(out_folder))
   

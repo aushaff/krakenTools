@@ -32,7 +32,7 @@ ass_l <- sort(ass_l)
 # "XLMEUR"  "XLMUSD"  "XLMXBT"  "XMREUR"  "XMRUSD"  "XMRXBT"  "XRPCAD" 
 # "XRPEUR"  "XRPJPY"  "XRPUSD"  "XRPXBT"  "ZECEUR"  "ZECJPY"  "ZECUSD" 
 # "ZECXBT" 
-
+1515862047817781514
 #==============================================================================
 # Process the assets
 # process_asset(asset_in, folder_root)
@@ -42,11 +42,13 @@ ass_l <- sort(ass_l)
 # folder_path <- file.path(folder_root, "BCHEUR")
 # 
 folder_root <- "/media/deckard/External/data/kraken"
+# ass_l <- c("XLMEUR", "XLMUSD", "XLMXBT", "XBTEUR", 
+#            "XBTUSD", "XRPXBT", "XRPEUR", "XRPUSD")
+
 sapply(ass_l, function(curr_asset) {
   
   process_asset(curr_asset, folder_root)  
   #to_long(curr_asset, folder_root)
 })
 
-ass_l <- c("XLMEUR", "XLMUSD", "XLMXBT")
 

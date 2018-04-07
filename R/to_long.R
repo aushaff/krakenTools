@@ -1,13 +1,12 @@
 #'@title To long df
 #'@description Convert downloaded data to long dataframe
 #'
-to_long <- function(in_curr, folder_root) {
+to_long <- function(in_curr, raw_dir, dp_dir) {
   
+  options(digits = 20)
   # get all filenames from the raw_data directory
   # order them by unix date
-  raw_dir <- file.path(folder_root, in_curr, "raw_data")
-  dp_dir <- file.path(folder_root, in_curr, "data_products")
-  
+
   all_files <- gtools::mixedsort(list.files(raw_dir))
 
   # check to see if long_df exists
@@ -18,13 +17,15 @@ to_long <- function(in_curr, folder_root) {
   # if doesnt exist:
   if(!file_exists) {
   
+    cat("Creating new long-file", long_filename, "\n")
+    
     dir.create(dp_dir)
     # take the earliest file from all files
     curr_file <- min(all_files)
     
     # read it in 
     new_long_df <- data.table::fread(file.path(raw_dir, curr_file))
-    new_long_df$last <- strsplit(curr_file, "_")[[1]][1]
+    #new_long_df$last <- strsplit(curr_file, "_")[[1]][1]
     
     # save it 
     data.table::fwrite(new_long_df, file.path(dp_dir, long_filename),
@@ -41,18 +42,19 @@ to_long <- function(in_curr, folder_root) {
       
     old_long_df <- data.table::fread(file.path(dp_dir, long_filename))
   }, warning = function(warn) {
-    print(warn)
+    stop(warn)
   }, error = function(err) {
-    print(paste0("error reading existing long_df ", long_filename))
+    stop(paste0("error reading existing long_df ", long_filename))
   })
-   
+  
   # get latest_date in the existing long_df
   rec_date <- as.numeric(max(old_long_df$last)  )
-    
+
   # split the 'lasts' from all the file names
   lasts <- strsplit(all_files, "_")
-  lasts_pt1_n <- as.numeric(unlist(lasts)[seq(1, length(lasts)*7, 7)])
-  
+  return(lasts)
+  lasts_pt1_n <- as.numeric(as.character(unlist(lasts)[seq(1, length(lasts), 5)]))
+  return(lasts_pt1_n)
   # make current only those filenames that are later than
   # the latest date in the long dataframe
   curr_files <- all_files[rec_date < lasts_pt1_n]

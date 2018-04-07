@@ -54,13 +54,20 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       #============================================
       #print("Writing file")
-      krakenTools::write_quote_df(curr_dat,
-                                  file_in,
-                                  pair_in,
-                                  folder_in, 
-                                  last_since = curr_since)
-      print("File written OK")
-
+        tryCatch({
+          krakenTools::write_quote_df(curr_dat,
+                                      file_in,
+                                      pair_in,
+                                      folder_in, 
+                                      last_since = curr_since)
+          print("File written OK")
+        }, warning = function(warn) {
+          print(paste0("Warning received from write_quote_df: ", warn))
+          more_data <- FALSE
+        }, error = function(err) {
+          print(paste0("Error received from write_quote_df: ", err))
+          more_data <- FALSE
+        })
       #============================================
       # get the earlist date from the current data
       earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
@@ -88,6 +95,8 @@ get_historical_trades <- function(pair_in, # pair to be read
         if(curr_trades$error != 0) {
           print(paste0("Error received from Kraken: ", curr_trades$error))
         }
+      }, error = function(err) {
+        print(err)
       })
       
  
