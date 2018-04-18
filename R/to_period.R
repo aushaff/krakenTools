@@ -3,15 +3,18 @@ create_index <- function(xts_in, period_in, sub_period) {
   if(period_in == "hour") {
     
     # fill the missing days with NAs
-    index <- seq(round(start(xts_in), "hour")-1, 
-                 round(end(xts_in), "hour")-1, by = "hour")
+    # index <- seq(round(start(xts_in), "hour")-1, 
+    #              round(end(xts_in), "hour")-1, by = "hour")
+    
+    index <- seq(lubridate::floor_date(start(xts_in), "hour")+3599,
+                 lubridate::floor_date(end(xts_in), "hour")+3599, by = "hour")
     
   } else if(period_in =="minutes") {
     
     # fill the missing days with NAs
     index <- seq(start(xts_in), end(xts_in), by = "day")
   } 
-  
+  print(head(index))
   return(index)
   
   

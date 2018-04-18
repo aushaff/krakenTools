@@ -10,4 +10,4 @@ License: What license is it under?
 Encoding: UTF-8
 LazyData: true
 Imports:
-	krakenR, gtools, data.table, bit64, plyr, anytime, R.utils, dplyr, stringi, curl, xts
+	krakenR, gtools, data.table, bit64, plyr, anytime, R.utils, dplyr, stringi, curl, xts, lubridate
