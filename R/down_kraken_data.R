@@ -1,4 +1,4 @@
-#'@title script to download kraken tick data
+  #'@title script to download kraken tick data
 #'@description uses the krakenR package to download all historical tick
 #'data for the specified pair
 #'
@@ -112,7 +112,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       }
       
       # if not wait to try again
-      Sys.sleep(10)
+      Sys.sleep(20)
     })
   }
 }

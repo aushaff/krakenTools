@@ -1,10 +1,12 @@
 library(krakenR)
+library(krakenTools)
 #===================================================
 # Get asset information
 assets <- krakenR::get_tradable_asset_pair()
 
 length(assets)
 # 68
+str(assets)
 
 get_asset_names <- function(asset) {
 
@@ -14,6 +16,7 @@ get_asset_names <- function(asset) {
 
 }
 
+assets
 
 ass_l <- unlist(lapply(assets, get_asset_names))
 
@@ -23,7 +26,7 @@ ass_l <- grep("[.d]", ass_l, value = TRUE, invert = TRUE)
 ass_l <- sort(ass_l)
 #ass_l <- rev(ass_l)
 
-# "BCHEUR"  "BCHUSD"  "BCHXBT" "DASHEUR" "DASHUSD" "DASHXBT"  "EOSETH" 
+# "BCHEUR", "BCHUSD"  "BCHXBT" "DASHEUR" "DASHUSD" "DASHXBT"  "EOSETH" 
 # "EOSEUR"  "EOSUSD"  "EOSXBT"  "ETCETH"  "ETCEUR"  "ETCUSD"  "ETCXBT" 
 # "ETHCAD"  "ETHEUR"  "ETHGBP"  "ETHJPY"  "ETHUSD"  "ETHXBT"  "GNOETH" 
 # "GNOEUR"  "GNOUSD"  "GNOXBT"  "ICNETH"  "ICNXBT"  "LTCEUR"  "LTCUSD" 
@@ -41,14 +44,41 @@ ass_l <- sort(ass_l)
 
 # folder_path <- file.path(folder_root, "BCHEUR")
 # 
-folder_root <- "/media/deckard/External/data/kraken"
+folder_root <- "/media/oz/External/data/kraken"
 # ass_l <- c("XLMEUR", "XLMUSD", "XLMXBT", "XBTEUR", 
 #            "XBTUSD", "XRPXBT", "XRPEUR", "XRPUSD")
 
+
+ass_l <- c("BCHEUR", "BCHUSD", "BCHXBT", "DASHEUR", "DASHUSD",
+           "DASHXBT", 
+           #"EOSETH", 
+           "EOSEUR", 
+           #"EOSUSD", 
+           "EOSXBT", 
+           "ETCETH", "ETCEUR", "ETCUSD", "ETCXBT", "ETHCAD", 
+           "ETHEUR", 
+           #"ETHGBP", "ETHJPY", 
+           "ETHUSD", "ETHXBT", 
+           "GNOETH", "GNOEUR", "GNOUSD", "GNOXBT", "LTCEUR", 
+           "LTCUSD", "LTCXBT", "MLNETH", "MLNXBT", "REPETH", 
+           "REPEUR", "REPUSD", "REPXBT", "USDTUSD", "XBTCAD", 
+           "XBTEUR", 
+           #"XBTGBP", 
+           #"XBTJPY", 
+           "XBTUSD", "XDGXBT",
+           "XLMEUR", "XLMUSD", "XLMXBT", "XMREUR", "XMRUSD",
+           "XMRXBT", 
+           #"XRPCAD", 
+           "XRPEUR", 
+           #"XRPJPY", 
+           "XRPUSD", 
+           "XRPXBT", "ZECEUR", 
+           #"ZECJPY", 
+           "ZECUSD", "ZECXBT")
 sapply(ass_l, function(curr_asset) {
   
   process_asset(curr_asset, folder_root)  
   #to_long(curr_asset, folder_root)
 })
-
+  
 

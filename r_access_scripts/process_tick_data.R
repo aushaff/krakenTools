@@ -7,8 +7,8 @@ library(krakenR)
 detach("package:krakenTools", unload=TRUE)
 library(krakenTools)
 
-root_folder <-  "/media/deckard/External/data/kraken"
-curr_asset <- "XLMXBT"
+root_folder <-  "/media/oz/External/data/kraken"
+curr_asset <- "XLMEUR"
 
 # Aim of this script will be to process the downloaded data into a long data
 # frame and carry out consistency checks e.g. 
@@ -22,7 +22,7 @@ curr_asset <- "XLMXBT"
 # in a later script
 
 # list the files in the current directory
-curr_dir <- file.path(root_folder, curr_asset)
+curr_dir <- file.path(root_folder, curr_asset, "raw_data")
 curr_files <- list.files(curr_dir)
 tst <- read.csv(file.path(curr_dir, curr_files[1]))
 long_df <- do.call(rbind, lapply(curr_files, 
@@ -38,3 +38,14 @@ head(long_df)
 tail(long_df)
 nrow(long_df)
 # 1019427
+
+# look for existing long dataframe
+
+# if exists read it in 
+
+# get latest date
+
+# check raw_dat dir for files with date later than or equal to the last?
+
+# read in each file one by one and append to csv
+
