@@ -1,7 +1,6 @@
-  #'@title script to download kraken tick data
+#'@title script to download kraken tick data
 #'@description uses the krakenR package to download all historical tick
 #'data for the specified pair
-#'
 #==============================================================================
 # pair in e.g.: ETHEUR
 # file_in e.g.: path/file.csv
@@ -131,8 +130,8 @@ get_since <- function(folder_path) {
     
   } else {
     
-    # get the most recent date
-    max_date <- max(folder_files)
+    # get the most recent date 
+    max_date <- max(gtools::mixedsort(folder_files))
     
     new_since <- strsplit(max_date, "_")[[1]][1]
     cat(" New since is: ", new_since, "\n")
@@ -142,10 +141,12 @@ get_since <- function(folder_path) {
   }
 }
 
-# take in the asset name, get the since and then
-# download the data
-process_asset <- function(asset_in,
-                          folder_root) {
+#'@title down_tick_data
+#'@description access functio to take in the asset name, get the since and then
+#' download the data
+#'@export
+down_tick_data <- function(asset_in,
+                           folder_root) {
   
   print("=====================================")
   cat("Processing asset: ", asset_in, "\n")

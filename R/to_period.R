@@ -52,7 +52,6 @@ to_period <- function(xts_in, period_in, out_dir, sub_period = 1) {
                                                 floor(.indexmin(curr_ohlc_nas_last))==59&
                                                 floor(.indexsec(curr_ohlc_nas_last))==59),]
     
-    
   }
     
   return(curr_ohlc_nas_last)

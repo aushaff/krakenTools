@@ -41,6 +41,10 @@ to_long <- function(in_curr,
   
   } else {
     
+    if(!dir.exists(dp_dir_in)) {
+      dir.create(dp_dir_in)
+    }
+    
     # get all filenames from the raw_data directory and order them by unix date
     all_files <- gtools::mixedsort(list.files(raw_dir_in))
     
