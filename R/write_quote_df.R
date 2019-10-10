@@ -1,4 +1,6 @@
-#==============================================================================
+#'@title write_quote_df
+#'@description write the downloaded tick data to file 
+#'@export
 write_quote_df <- function(curr_dat,
                            file_in,
                            pair_in,

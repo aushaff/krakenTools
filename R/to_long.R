@@ -74,7 +74,6 @@ to_long <- function(in_curr,
     return(0)
   }
   
-  
   # append the files_to_be_read to the existing csv file
   sapply(files_to_be_read, function(curr_file) {
     

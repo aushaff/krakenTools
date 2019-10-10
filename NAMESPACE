@@ -3,3 +3,4 @@
 export(check_long_df)
 export(down_tick_data)
 export(to_long)
+export(write_quote_df)
