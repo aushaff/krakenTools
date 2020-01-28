@@ -1,11 +1,11 @@
 #'@title check long df
-#'@description 
+#'@description DONT USE
 #'@export
 check_long_df <- function(curr_raw_dir_in,
                           curr_dat_prod_dir_in,
                           curr_asset_in,
                           complete_check = FALSE) {
-  
+  stop()
   # check that both necessary directories exist
   raw_bool <- dir.exists(curr_raw_dir_in)
   dp_bool <- dir.exists(curr_dat_prod_dir_in)

@@ -4,9 +4,13 @@
 \alias{check_long_df}
 \title{check long df}
 \usage{
-check_long_df(curr_raw_dir_in, curr_dat_prod_dir_in, curr_asset_in,
-  complete_check = FALSE)
+check_long_df(
+  curr_raw_dir_in,
+  curr_dat_prod_dir_in,
+  curr_asset_in,
+  complete_check = FALSE
+)
 }
 \description{
-Convert data downloaded from kraken to long dataframe
+DONT USE
 }
