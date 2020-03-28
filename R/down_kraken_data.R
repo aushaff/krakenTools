@@ -168,3 +168,32 @@ down_tick_data <- function(asset_in,
   
 }
 
+#'@title download multiple assets
+#'@description call down_tick_data for multiple assets and create the long
+#'file if flagged
+#'@export
+down_multi_ass <- function(ass_l, 
+                           folder_root,
+                           to_long = TRUE) {
+
+  sapply(ass_l, function(curr_asset) {
+    
+    krakenTools::down_tick_data(curr_asset, folder_root)  
+    #to_long(curr_asset, folder_root)
+  })
+  
+  if(to_long) {
+    
+    sapply(ass_l, function(curr_ass) {
+      
+      curr_raw_dir <- file.path(folder_root, curr_ass , "raw_data")
+      curr_dat_dir <- file.path(folder_root, curr_ass , "data_products")
+      
+      # detach(package:krakenTools, unload = TRUE)
+      # library(krakenTools)
+      krakenTools::to_long(curr_ass,
+                           curr_raw_dir,
+                           curr_dat_dir)
+    })
+  }
+}
