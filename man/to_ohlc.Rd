@@ -5,9 +5,10 @@
 \title{to ohlc}
 \usage{
 to_ohlc(
-  in_long,
+  long_df,
   dp_dir_in,
-  periods = c("1 minute", "30 minutes", "1 hour", "4 hours", "12 hours", "daily")
+  periods = c("1 seconds", "30 seconds", "1 minutes", "30 minutes", "1 hours",
+    "4 hours", "12 hours", "24 hours")
 )
 }
 \description{

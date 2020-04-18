@@ -1,9 +1,9 @@
 #'@title script to download kraken tick data
 #'@description uses the krakenR package to download all historical tick
 #'data for the specified pair
-#==============================================================================
-# pair in e.g.: ETHEUR
-# file_in e.g.: path/file.csv
+#' pair in e.g.: ETHEUR
+#' file_in e.g.: path/file.csv
+#'@export
 get_historical_trades <- function(pair_in, # pair to be read
                                   folder_in, # data folder
                                   curr_since # time to collect data
@@ -70,7 +70,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       #============================================
       # get the earlist date from the current data
       earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
-      
+
       # check the time and stop if less than 1 hour old
       time_stop <- Sys.time() - (60*60)
       cat("time_stop is: ", time_stop, "\n")
