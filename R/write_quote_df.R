@@ -35,7 +35,7 @@ write_quote_df <- function(curr_dat,
     data.table::fwrite(curr_dat, file = temp_file,
                        row.names = FALSE,
                        col.names = TRUE,
-                       sep = ";",
+                       sep = ",",
                        append = FALSE)
 
   }, warning = function(warn) {
