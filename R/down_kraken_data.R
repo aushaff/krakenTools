@@ -37,10 +37,10 @@ get_historical_trades <- function(pair_in, # pair to be read
       # extract the data and provide column headers
       curr_dat <- data.frame(curr_trades$result[[1]])
       
-      header <- c("price", "volume", "unix_time", 
-                  "buy_sell", "mark_lim", "misc")
-      
-      colnames(curr_dat) <- header
+      # header <- c("price", "volume", "unix_time", 
+      #             "buy_sell", "mark_lim", "misc")
+      # 
+      # colnames(curr_dat) <- header
       
       #===========================================
       # update the since
@@ -50,6 +50,18 @@ get_historical_trades <- function(pair_in, # pair to be read
       #============================================
       # reset the error retries
       retries <- 0
+      
+      #============================================
+      # add the datetime on the end of the curr_dat for the database
+      
+      curr_dat$dt <- as.POSIXct(curr_dat$unix_time,
+                             origin="1970-01-01",
+                             tz = "UTC")
+      #head(csv)
+      curr_dat$dt <- format(curr_dat$dt, "%Y-%m-%d %H:%M:%OS4")
+      #head(csv)
+      
+      curr_dat$unix_time <- format(curr_dat$unix_time, digits = 15)
       
       #============================================
       #print("Writing file")
