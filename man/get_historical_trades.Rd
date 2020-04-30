@@ -9,4 +9,6 @@ get_historical_trades(pair_in, folder_in, curr_since)
 \description{
 uses the krakenR package to download all historical tick
 data for the specified pair
+pair in e.g.: ETHEUR
+file_in e.g.: path/file.csv
 }

@@ -1,9 +1,9 @@
 #'@title script to download kraken tick data
 #'@description uses the krakenR package to download all historical tick
 #'data for the specified pair
-#==============================================================================
-# pair in e.g.: ETHEUR
-# file_in e.g.: path/file.csv
+#' pair in e.g.: ETHEUR
+#' file_in e.g.: path/file.csv
+#'@export
 get_historical_trades <- function(pair_in, # pair to be read
                                   folder_in, # data folder
                                   curr_since # time to collect data
@@ -35,11 +35,12 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       #============================================
       # extract the data and provide column headers
-      curr_dat <- data.frame(curr_trades$result[[1]])
+      curr_dat <- data.frame(curr_trades$result[[1]],
+                             stringsAsFactors = FALSE)
       
       header <- c("price", "volume", "unix_time", 
-                  "buy_sell", "mark_lim", "misc")
-      
+                   "buy_sell", "mark_lim", "misc")
+       
       colnames(curr_dat) <- header
       
       #===========================================
@@ -50,6 +51,25 @@ get_historical_trades <- function(pair_in, # pair to be read
       #============================================
       # reset the error retries
       retries <- 0
+      
+      #============================================
+      # add the datetime on the end of the curr_dat for the database
+      #print("****")
+      #print(curr_dat[, 3])
+      
+      #print(class(curr_dat$unix_time))
+      curr_dat$unix_time <- as.numeric(curr_dat$unix_time)
+      #curr_dat$unix_time <- format(curr_dat$unix_time, digits = 15)
+      
+      #print(class(curr_dat$unix_time))
+      
+      curr_dat$dt <- as.POSIXct(curr_dat$unix_time,
+                                origin="1970-01-01",
+                                tz = "UTC")
+      #head(csv)
+      curr_dat$dt <- format(curr_dat$dt, "%Y-%m-%d %H:%M:%OS4")
+      #head(csv)
+      
       
       #============================================
       #print("Writing file")
@@ -70,7 +90,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       #============================================
       # get the earlist date from the current data
       earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
-      
+
       # check the time and stop if less than 1 hour old
       time_stop <- Sys.time() - (60*60)
       cat("time_stop is: ", time_stop, "\n")
@@ -111,7 +131,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       }
       
       # if not wait to try again
-      Sys.sleep(20)
+      Sys.sleep(60)
     })
   }
 }
@@ -168,3 +188,32 @@ down_tick_data <- function(asset_in,
   
 }
 
+#'@title download multiple assets
+#'@description call down_tick_data for multiple assets and create the long
+#'file if flagged
+#'@export
+down_multi_ass <- function(ass_l, 
+                           folder_root,
+                           to_long = TRUE) {
+
+  sapply(ass_l, function(curr_asset) {
+    
+    krakenTools::down_tick_data(curr_asset, folder_root)  
+    #to_long(curr_asset, folder_root)
+  })
+  
+  if(to_long) {
+    
+    sapply(ass_l, function(curr_ass) {
+      
+      curr_raw_dir <- file.path(folder_root, curr_ass , "raw_data")
+      curr_dat_dir <- file.path(folder_root, curr_ass , "data_products")
+      
+      # detach(package:krakenTools, unload = TRUE)
+      # library(krakenTools)
+      krakenTools::to_long(curr_ass,
+                           curr_raw_dir,
+                           curr_dat_dir)
+    })
+  }
+}
