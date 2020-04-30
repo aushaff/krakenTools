@@ -13,7 +13,7 @@ get_historical_trades <- function(pair_in, # pair to be read
   # Setup
   more_data <- TRUE # more data to be downloaded
   retries <- 0 
-  max_retries <- 10
+  max_retries <- 3
   earliest <- 0
 
   #============================================================================
