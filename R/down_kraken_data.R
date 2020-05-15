@@ -131,7 +131,7 @@ get_historical_trades <- function(pair_in, # pair to be read
       }
       
       # if not wait to try again
-      Sys.sleep(60)
+      Sys.sleep(10)
     })
   }
 }
