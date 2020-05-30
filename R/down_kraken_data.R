@@ -6,14 +6,14 @@
 #'@export
 get_historical_trades <- function(pair_in, # pair to be read
                                   folder_in, # data folder
-                                  curr_since # time to collect data
-                                  ) {
+                                  curr_since, # time to collect data
+                                  max_retries = 3) {
 
   #========================================================
   # Setup
   more_data <- TRUE # more data to be downloaded
   retries <- 0 
-  max_retries <- 3
+  #max_retries <- 3
   earliest <- 0
 
   #============================================================================
