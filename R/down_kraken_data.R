@@ -92,8 +92,9 @@ get_historical_trades <- function(pair_in, # pair to be read
       # get the earlist date from the current data
       earliest <- max(as.numeric(as.character(curr_dat$unix_time)))
 
-      # check the time and stop if less than 1 hour old
-      time_stop <- Sys.time() - (60*60)
+      # check the time and stop if less than 5 minutes old
+      time_mins <- 5
+      time_stop <- Sys.time() - (60*5)
       cat("time_stop is: ", time_stop, "\n")
       cat("earliest is: ", earliest, "\n")
       print(time_stop >= earliest)
