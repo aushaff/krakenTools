@@ -12,6 +12,10 @@ to_ohlc <- function(long_df,
                                 "12 hours",
                                 "24 hours")) {
   
+  header <- c("price", "volume", "unix_time", 
+              "buy_sell", "mark_lim", "misc")
+  
+  colnames(long_df) <- header
  
   long_df$dt <- as.POSIXct(long_df$unix_time, 
                            origin="1970-01-01",

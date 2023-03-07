@@ -8,15 +8,16 @@ to_long <- function(in_curr,
                     duplicate_check = TRUE) {
   
   options(digits = 20)
-  
+  #print(N)
   file_suffix <- paste0("__", in_curr, "_long_tick_data.csv")
   #print(file_suffix)
-  
+  #print(N)  
   # does the long dataframe exist?
   long_df_check <- list.files(dp_dir_in, pattern = paste0(in_curr,
                                                        "_long_tick_data.csv"))
+  #print(N)
   if(length(long_df_check)>0) {
-    
+    #print(N)
     print("Long file exists")
     
     # curr_filename
@@ -40,51 +41,52 @@ to_long <- function(in_curr,
     }
   
   } else {
-    
+    #print(N)
     if(!dir.exists(dp_dir_in)) {
       dir.create(dp_dir_in)
     }
-    
+    #print(N)
     # get all filenames from the raw_data directory and order them by unix date
     all_files <- gtools::mixedsort(list.files(raw_dir_in))
     
     # get first file and read it in
     curr_file <- all_files[1]
     new_long_df <- data.table::fread(file.path(raw_dir_in, curr_file))
-    
+    #print(N)
     curr_last <- strsplit(curr_file, "_")[[1]][1]
-  
+    #print(N)
     curr_filename <- paste0(curr_last,
                             file_suffix)
+    #print(N)
     # save it
     data.table::fwrite(new_long_df, file.path(dp_dir_in, curr_filename),
                        append = FALSE,
                        sep = ";",
                        row.names = FALSE,
-                       col.names = TRUE)
+                       col.names = FALSE)
     
     files_to_be_read <- all_files[-1]
   }
   
   # here we should have the curr_last, curr_filename and the files_to_be_read
-
+  #print(N)
   if(length(files_to_be_read)==0) {
 
     cat("No files to process", "\n")
     return(0)
   }
-  
+  #print(N)
   # append the files_to_be_read to the existing csv file
   sapply(files_to_be_read, function(curr_file) {
-    
+    #print(N)
     in_file <- data.table::fread(file.path(raw_dir_in, curr_file))
     
     curr_last <<- strsplit(curr_file, "_")[[1]][1]
 
     # check to ensure that we are adding data of the
     # same dimensions
-    stopifnot(ncol(in_file)==6)
-
+    stopifnot(ncol(in_file)==7)
+    #print(N)
     # then write
     data.table::fwrite(in_file, file.path(dp_dir_in, curr_filename),
                        append = TRUE,
