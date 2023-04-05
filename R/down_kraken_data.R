@@ -39,7 +39,7 @@ get_historical_trades <- function(pair_in, # pair to be read
                              stringsAsFactors = FALSE)
       
       header <- c("price", "volume", "unix_time", 
-                   "buy_sell", "mark_lim", "misc")
+                   "buy_sell", "mark_lim", "misc", "order_no")
        
       colnames(curr_dat) <- header
       
@@ -63,14 +63,8 @@ get_historical_trades <- function(pair_in, # pair to be read
       
       #print(class(curr_dat$unix_time))
       
-      # I dont know why this was on here
-      # curr_dat$dt <- as.POSIXct(curr_dat$unix_time,
-      #                           origin="1970-01-01",
-      #                           tz = "UTC")
-      # #head(csv)
-      # curr_dat$dt <- format(curr_dat$dt, "%Y-%m-%d %H:%M:%OS4")
-      #head(csv)
-      
+      # This is here as it is the datetime for the timescaledb key
+      curr_dat$dt <- lubridate::as_datetime(curr_dat$unix_time, tz = "UTC")
       
       #============================================
       #print("Writing file")
