@@ -86,6 +86,7 @@ get_historical_trades <- function(pair_in, # pair to be read
           more_data <- FALSE
         }, error = function(err) {
           print(paste0("Error received from write_quote_df: ", err))
+          stop()
           more_data <- FALSE
         })
       #============================================
