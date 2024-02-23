@@ -4,7 +4,7 @@
 \alias{get_historical_trades}
 \title{script to download kraken tick data}
 \usage{
-get_historical_trades(pair_in, folder_in, curr_since)
+get_historical_trades(pair_in, folder_in, curr_since, max_retries = 3)
 }
 \description{
 uses the krakenR package to download all historical tick

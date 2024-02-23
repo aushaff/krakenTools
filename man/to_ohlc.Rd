@@ -7,8 +7,8 @@
 to_ohlc(
   long_df,
   dp_dir_in,
-  periods = c("1 seconds", "30 seconds", "1 minutes", "30 minutes", "1 hours",
-    "4 hours", "12 hours", "24 hours")
+  periods = c("1 seconds", "30 seconds", "1 minutes", "30 minutes", "1 hours", "4 hours",
+    "12 hours", "24 hours")
 )
 }
 \description{
